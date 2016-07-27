@@ -2,7 +2,7 @@
 @package api
 Data import controllers
 """
-from flask import Blueprint, jsonify, redirect, request, make_response
+from flask import Blueprint, jsonify, redirect, request, make_response, abort
 from api.database import DataAccess
 from oic import rndstr
 from oic.oic import Client
@@ -36,11 +36,13 @@ def login():
 
     # verify the token is a valid user in the system
     # we can improve on this by checking status as well
+    # maybe we will change this to check the tenant/role attributes instead
     username = DataAccess().get_user(user_jwt['preferred_username'])
+    """ TODO: REFACTORING AUTHN AGAIN
     if(username is None):
         # TODO log this and display a proper exception
         abort(401)
-
+    """
     encoded = jwt.encode({'userid': user_jwt['preferred_username']}, 'secret', algorithm='HS256')
 
     # set the session token in a cookie
@@ -62,8 +64,8 @@ def make_authentication_request():
         "response_mode": "form_post",
         "state": state,
         "nonce": nounce,
-        "redirect_uri": "http://localhost:5000/api/auth/login",
-        "scope":"openid email profile"
+        "redirect_uri": "http://localhost:5001/api/auth/login",
+        "scope":"openid profile"
     }
 
     # Client Id

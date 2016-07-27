@@ -6,7 +6,7 @@ services:
       dockerfile: dev.dockerfile
     command: bash
     ports:
-      - "5001:80"
+      - "5005:80"
     volumes:
       - ../src:/app
     tty: true
@@ -17,10 +17,10 @@ services:
   mongo:
     image: mongo:3.3.9
     ports:
-      - "27017:27017"
+      - "27027:27017"
     networks:
       beacon:
         aliases:
-          - mongodb
+          - mongohub
 networks:
   beacon:

@@ -7,6 +7,7 @@ from api.database import DataAccess
 from oic import rndstr
 from oic.oic import Client
 from oic.oic.message import AuthorizationResponse
+from api.settings import Settings
 import jwt
 
 auth_controllers = Blueprint('auth_controllers', __name__)
@@ -16,13 +17,13 @@ def login():
     """
     handle oidc reponse
     """
-    client = Client("f123a339-be25-420f-a843-ecad0938a050")
+    client = Client(Settings.auth_client_id)
 
     user_jwt = jwt.decode(request.form['id_token'], verify=False)
 
     print(request.form['id_token'])
     print (user_jwt)
-    # TODO Fix the token validation
+    # TODO Update token validation to retrieve certificate
     """
     auth_response = client.parse_response(AuthorizationResponse,
         info = request.form,
@@ -30,19 +31,21 @@ def login():
         verify = False)
     """
 
-    # TODO validate the token
-
     response = make_response(redirect('/'))
 
     # verify the token is a valid user in the system
     # we can improve on this by checking status as well
     # maybe we will change this to check the tenant/role attributes instead
     username = DataAccess().get_user(user_jwt['preferred_username'])
-    """ TODO: REFACTORING AUTHN AGAIN
+
+    # we keep a list of valide users in the database
+    # ideally we would just check roles from the provider
+    #      but there are some challenges managing the group and role claims in the provider right now
+    #      and we may want to consider a simple authorization service or working out the claims
     if(username is None):
-        # TODO log this and display a proper exception
+        # TODO log this and display a proper exception see if we can shift the authorization to role/group claims from the provider
         abort(401)
-    """
+
     encoded = jwt.encode({'userid': user_jwt['preferred_username']}, 'secret', algorithm='HS256')
 
     # set the session token in a cookie
@@ -55,6 +58,7 @@ def login():
 
 @auth_controllers.route('/getauthrequest', methods=['GET'])
 def make_authentication_request():
+    print ('create authentication request')
     # consider storing a hash in state
     # what to hash in state might include cookie data, time, salt, etc...
     state = rndstr()
@@ -64,15 +68,21 @@ def make_authentication_request():
         "response_mode": "form_post",
         "state": state,
         "nonce": nounce,
-        "redirect_uri": "http://localhost:5001/api/auth/login",
+        "redirect_uri": Settings.auth_redirect_url,
         "scope":"openid profile"
     }
 
-    # Client Id
-    client = Client("f123a339-be25-420f-a843-ecad0938a050")
+    print (Settings.auth_client_id)
 
-    auth_req = client.construct_AuthorizationRequest(request_args=request_args)
-    login_url = auth_req.request("https://login.microsoftonline.com/fs180.onmicrosoft.com/oauth2/v2.0/authorize")
+    client = Client(Settings.auth_client_id)
+
+    auth_req = client.construct_AuthorizationRequest(request_args = request_args)
+
+    provider_url = Settings.auth_provider_url
+    if Settings.auth_tenant is not None:
+        provider_url = provider_url.replace("{{tenant}}", Settings.auth_tenant)
+
+    login_url = auth_req.request(provider_url)
 
     print(login_url)
 

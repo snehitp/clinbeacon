@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import { DataService } from './data.service';
+import { ActivatedRoute } from '@angular/router';
+import { DataService } from '../data.service';
 import { Router } from '@angular/router';
 
 // TODO: Consider merging create with edit and handling the 'new' id
@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
     </div>
     <div>
       reference
-      <input type="text" [(ngModel)]="reference">
+      <input type="text" [(ngModel)]="reference" />
     </div>
     <div>
       <button (click)="add()">add</button>

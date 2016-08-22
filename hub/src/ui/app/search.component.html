@@ -1,0 +1,106 @@
+<section id="search-panel" class="task-panel">
+  <div class="showback">
+    <h4><i class="fa fa-angle-right"></i> {{title}}</h4>
+    <!-- Single button -->
+    <div>
+      <div class="btn-group">
+        <button type="button" class="btn btn-theme03 dropdown-toggle" data-toggle="dropdown">
+          Genetic Mutations <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+          <li><a href="#">Genetic Mutations</a></li>
+          <li><a href="#">Another action</a></li>
+          <li><a href="#">Something else here</a></li>
+          <li><a href="#">Separated link</a></li>
+        </ul>
+      </div>
+      <span>Find genetic mutations</span>
+    </div>
+    <div class="row search-filters">
+      <div class="col-md-4">
+        <label>Chromosome</label>
+        <input [(ngModel)]="beaconQuery.chrom" class="form-control">
+      </div>
+      <div class="col-md-4">
+        <label>Position</label>
+        <input [(ngModel)]="beaconQuery.position" class="form-control">
+      </div>
+      <div class="col-md-4">
+        <label>Allele</label>
+        <input [(ngModel)]="beaconQuery.allele" class="form-control">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <button type="button" (click)="find()" class="btn btn-theme"><i class="fa fa-search"></i> Search</button>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="task-panel tasks-widget">
+  <div class="panel-heading">
+    <div class="pull-left">
+      <h5><i class="fa fa-search"></i> Search Results</h5>
+    </div>
+    <br>
+  </div>
+  <div class="panel-body">
+    <div class="task-content">
+      <ul id="sortable" class="task-list ui-sortable" *ngFor="let item of queryResults">
+        <li class="list-success">
+          <div class="task-photo">
+            <img src="../assets/img/friends/fr-01.jpg">
+          </div>
+          <div class="task-title">
+            <span class="task-title-sp">{{item.beacon}}</span><br>
+            <span class="task-details-sp">Beacon hosted by clingen organization</span>
+          </div>
+          <div class="pull-right">
+            <span class="badge bg-success badge-block">{{item.result.count}}</span>
+          </div>
+        </li>
+      </ul>
+      <!--
+    <ul id="sortable" class="task-list ui-sortable">
+
+      <li class="list-danger">
+        <div class="task-photo">
+          <img src="../assets/img/friends/fr-01.jpg">
+        </div>
+        <div class="task-title">
+          <span class="task-title-sp">Extensive collection of plugins</span><br>
+          <span class="task-details-sp">Extensive collection of plugins</span>
+        </div>
+        <div class="pull-right">
+          <span class="badge bg-important badge-block">15</span>
+        </div>
+      </li>
+      <li class="list-success">
+        <div class="task-photo">
+          <img src="../assets/img/friends/fr-01.jpg">
+        </div>
+        <div class="task-title">
+          <span class="task-title-sp">Extensive collection of plugins</span><br>
+          <span class="task-details-sp">Extensive collection of plugins</span>
+        </div>
+        <div class="pull-right">
+          <span class="badge bg-success badge-block">15</span>
+        </div>
+      </li>
+      <li class="list-warning">
+        <div class="task-photo">
+          <img src="../assets/img/friends/fr-01.jpg">
+        </div>
+        <div class="task-title">
+          <span class="task-title-sp">Extensive collection of plugins</span><br>
+          <span class="task-details-sp">Extensive collection of plugins</span>
+        </div>
+        <div class="pull-right">
+          <span class="badge bg-warning badge-block">15</span>
+        </div>
+      </li>
+    </ul>
+    -->
+    </div>
+  </div>
+</section>

@@ -3,10 +3,13 @@
 Data access API
 """
 
+import sys
 import pymongo
+from bson.objectid import ObjectId
 from api.settings import Settings
 
 DB_NAME = "clingenhub"
+BEACON_COLLECTION = "beacons"
 
 class DataAccess:
   """Implements data access layer"""
@@ -19,7 +22,7 @@ class DataAccess:
   ##
   def get_beacons(self):
     """
-      Get a list of the beacons
+    Get a list of the beacons
     """
     # Pass confgiuration in on the constructor
     with pymongo.MongoClient(host = Settings.mongo_connection_string) as mclient:
@@ -27,11 +30,12 @@ class DataAccess:
       
       # filter for current and active tenants with beacons
 
-      cursor = db['beacon'].find()
+      cursor = db[BEACON_COLLECTION].find()
       return list(
         {
           "id":str(o["_id"]),
           "name":o["name"],
+          "description":o["description"],
           "endpoint":o["endpoint"]
         } for o in cursor)
 
@@ -42,7 +46,7 @@ class DataAccess:
     with pymongo.MongoClient(host = Settings.mongo_connection_string) as mclient:
       db = mclient[DB_NAME]
 
-      tenant_data = db['beacon']
+      tenant_data = db[BEACON_COLLECTION]
 
       result = tenant_data.insert_one(document)
 
@@ -55,24 +59,40 @@ class DataAccess:
     with pymongo.MongoClient(host = Settings.mongo_connection_string) as mclient:
       db = mclient[DB_NAME]
 
-      tenant_data = db['beacon']
+      tenant_data = db[BEACON_COLLECTION]
 
-      tenant_data.update_one({'_id': id}, beacon)
+      tenant_data.replace_one({'_id': ObjectId(id)}, beacon)
 
       return True
 
-  """
-  Get Beacon Details
-  """
-  def get_beacon(self, id):
+  def delete_beacon(self, id):
+    """
+    Delete a beacon
+    """
     with pymongo.MongoClient(host = Settings.mongo_connection_string) as mclient:
       db = mclient[DB_NAME]
 
-      tenant_data = db['beacon']
+      tenant_data = db[BEACON_COLLECTION]
 
-      tenant = tenant_data.find_one({'_id': id})
+      tenant_data.delete_one({'_id': ObjectId(id)})
 
-      return tenant
+  def get_beacon(self, id):
+    """
+    Get Beacon Details
+    """
+    with pymongo.MongoClient(host = Settings.mongo_connection_string) as mclient:
+      db = mclient[DB_NAME]
+
+      tenant_data = db[BEACON_COLLECTION]
+
+      tenant = tenant_data.find_one({'_id': ObjectId(id)})
+
+      return {
+                "id":str(tenant["_id"]),
+                "name":tenant["name"],
+                "description":tenant["description"],
+                "endpoint":tenant["endpoint"]
+              }
 
   ##
   ## User Collection Methods
@@ -89,7 +109,7 @@ class DataAccess:
       if 'users' not in db.collection_names():
         return None
       
-      user_data = db['tenants']
+      user_data = db['users']
 
       user = user_data.find_one({'_id': id})
 

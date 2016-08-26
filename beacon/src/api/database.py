@@ -116,9 +116,11 @@ class DataAccess:
       db = mclient[DB_NAME]
       patients_collection = db['patients']
 
-      cursor = patients_collection.find({},{})
+      cursor = patients_collection.find()
+      # The following returns just the id's
+      # cursor = patients_collection.find({},{})
 
-      return list({"id":str(o["_id"])} for o in cursor)
+      return list({'id':str(o['_id']), 'reference': o['reference']} for o in cursor)
   
   def add_patient(self, document):
     """
@@ -145,6 +147,19 @@ class DataAccess:
       #TODO - Delete all related samples
 
       patients_collection.delete_one({'_id': ObjectId(id)})
+
+  def get_patient(self, id):
+    """
+    Get a list of all the genome samples
+    """
+
+    with pymongo.MongoClient(host = Settings.mongo_connection_string) as mclient:
+      db = mclient[DB_NAME]
+      patients_collection = db['patients']
+
+      patient = patients_collection.find_one({'_id': ObjectId(id)})
+
+      return {"id":str(patient["_id"]), "reference":patient["reference"]}
 
   def get_patient_samples(self, id):
     """

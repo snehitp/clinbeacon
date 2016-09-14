@@ -1,10 +1,18 @@
 from flask import Flask, request
 import logging
+from os import path
+
+import sys
+sys.path.append(path.abspath('../lib'))
 
 FORMAT = '%(levelname)-8s %(asctime)-15s %(message)s'
 logging.basicConfig(level=logging.INFO, format=FORMAT)
 
 log = logging.getLogger()
+
+from api.settings import Settings
+from lib.settings import LibSettings
+LibSettings.mongo_connection_string = Settings.mongo_connection_string
 
 # Define a new flask application
 app = Flask(__name__)
@@ -16,6 +24,9 @@ def before_request():
 # Add the Query controllers to the flask application
 from api.query_controllers import query_controllers
 app.register_blueprint(query_controllers, url_prefix='/api/query')
+
+from api.vcf_controllers import vcf_controllers
+app.register_blueprint(vcf_controllers, url_prefix='/api/vcf')
 
 # Add the data import controllers to the flask application
 from api.import_controllers import import_controllers

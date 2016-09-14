@@ -4,7 +4,7 @@ Beacon Management API Controllers
 """
 from flask import Blueprint, jsonify, request, flash
 from api import log
-from api.database import DataAccess, IndividualCollection
+from lib.beacondb import VcfSampleCollection, IndividualCollection, VcfFileCollection
 from api.auth import requires_auth
 from werkzeug.utils import secure_filename
 import vcf
@@ -64,7 +64,7 @@ def delete_patient_samples(id, sampleId):
 @requires_auth
 def get_patient_samples(id):
     """ Get all gene samples for an individual """
-    list = DataAccess().get_patient_samples(id)
+    list = VcfSampleCollection().get_by_individualid(id)
 
     # add query string to fetch (status and filter by ids)
 
@@ -106,21 +106,25 @@ def upload_patient_samples(id):
 
         # This approach creates a document for each sample
         samples = next(vcf_reader).samples
+        sample_count = len(samples)
         
         stream.seek(0)
         vcf_reader = vcf.Reader(stream)
 
-        for sample in samples:
-            variants = list()
-            # TODO: See if we can find a better approach to this
+        for i in range(0, sample_count):
             stream.seek(0)
             vcf_reader = vcf.Reader(stream)
+            variants = list()
+
             for record in vcf_reader:
+                sample = record.samples[i]
 
                 #TODO - there are better ways to handle this
                     # Do we need to store the reference for this query
-                allleles = []
+                # sample = record.samples[0]
+                alleles = []
                 if sample.gt_bases is not None:
+                    log.info(sample.gt_bases)
                     alleles = re.split(r'[\\/|]', sample.gt_bases)
                     # remove duplicates
                     alleles = set(alleles)
@@ -134,7 +138,7 @@ def upload_patient_samples(id):
                         variants.append(chrom + '_' + str(record.POS) + '_' + allele)
 
             # insert samples into the database
-            DataAccess().import_vcf(
+            VcfSampleCollection().add(
                 {
                     'patientId': id,
                     'variants': variants}
